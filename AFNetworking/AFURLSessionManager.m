@@ -348,7 +348,9 @@ expectedTotalBytes:(int64_t)expectedTotalBytes {
     NSParameterAssert(task);
     NSParameterAssert(delegate);
 
-    [task addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:(NSKeyValueObservingOptions)(NSKeyValueObservingOptionOld |NSKeyValueObservingOptionNew) context:AFTaskStateChangedContext];
+    /* Skip observers for now (KVO crash: https://github.com/AFNetworking/AFNetworking/issues/1477)
+     [task addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:(NSKeyValueObservingOptions)(NSKeyValueObservingOptionOld |NSKeyValueObservingOptionNew) context:AFTaskStateChangedContext];
+     */
     [self.lock lock];
     self.mutableTaskDelegatesKeyedByTaskIdentifier[@(task.taskIdentifier)] = delegate;
     [self.lock unlock];
@@ -420,7 +422,9 @@ expectedTotalBytes:(int64_t)expectedTotalBytes {
 - (void)removeDelegateForTask:(NSURLSessionTask *)task {
     NSParameterAssert(task);
 
-    [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+    /* Skip observers for now (KVO crash: https://github.com/AFNetworking/AFNetworking/issues/1477)
+     [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+     */
     [self.lock lock];
     [self.mutableTaskDelegatesKeyedByTaskIdentifier removeObjectForKey:@(task.taskIdentifier)];
     [self.lock unlock];
@@ -735,11 +739,12 @@ didBecomeInvalidWithError:(NSError *)error
     }
 
     [self.session getTasksWithCompletionHandler:^(NSArray *dataTasks, NSArray *uploadTasks, NSArray *downloadTasks) {
+        /* Skip observers for now (KVO crash: https://github.com/AFNetworking/AFNetworking/issues/1477)
         NSArray *tasks = [@[dataTasks, uploadTasks, downloadTasks] valueForKeyPath:@"@unionOfArrays.self"];
         for (NSURLSessionTask *task in tasks) {
             [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
         }
-
+         */
         [self removeAllDelegates];
     }];
 
